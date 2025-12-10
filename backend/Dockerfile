@@ -2,6 +2,8 @@
 # BACKEND - CONTAINER POUR LE BACKEND (Python + FastAPI)
 # =============================================================================
 
+# test 
+echo text
 
 # Utilisation de 'alpine' pour éviter les erreurs avec PostgreSQL
 FROM python:3.11-slim
