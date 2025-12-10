@@ -1,0 +1,57 @@
+# ==========================================
+# DOCKER - CONTAINER COMPOSE POUR TODO APP
+# ==========================================
+
+services:
+
+  # ==========================================
+  # SERVICE BACKEND (API FastAPI)
+  # ==========================================
+  backend:
+    build: ./backend # construction de l'image depuis le dossier /backend
+    ports:
+      - "8000:8000" # configuration du port 
+    
+    environment:
+      DB_HOST: db
+      DB_NAME: app_db # nom de la db
+      DB_USER: postgres # user par défaut
+      DB_PASSWORD_FILE: /run/secrets/db_password # chemin du mdp
+    
+    secrets:
+      - db_password 
+    depends_on:
+      db:
+        condition: service_healthy # attend que la db soit bien montée avant de lancer l'API
+
+
+  # ==========================================
+  # SERVICE BASE DE DONNÉES (PostgreSQL)
+  # ==========================================
+  db:
+    build: ./database # construction de l'image depuis le dossier /database
+    environment:
+      POSTGRES_DB: app_db # nom de la db
+      POSTGRES_USER: postgres # user par défaut
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password # chemin du mdp
+    secrets:
+      - db_password 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"] # vérification si serveur accepte connexions
+      interval: 5s
+      timeout: 5s
+
+
+  # ==========================================
+  # GESTION DU FICHIER SECRET DB
+  # ==========================================
+secrets:
+  db_password:
+    file: ./secrets/db_password
+
+
+  # ==========================================
+  # SERVICE FRONTEND
+  # ==========================================
+
+  # alexis...

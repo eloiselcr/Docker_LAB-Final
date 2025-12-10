@@ -1,33 +1,36 @@
 # =============================================================================
-# 🐍 Backend API Template - FastAPI
-# Fichier principal de l'API REST
+# BACKEND - Fichier principal API (Python + FastAPI)
 # =============================================================================
 
-from fastapi import FastAPI, HTTPException, Depends
+
+from fastapi import FastAPI, HTTPException, Depends # moteur pour le site web
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel # pour validation des données envoyées par le frontend
+
 import os
 from typing import List, Optional
 
-# IMPORTS AJOUTÉS POUR LA BASE DE DONNÉES
-import psycopg2
+import psycopg2 # permet la relation python <-> postgresql
 from psycopg2.extras import RealDictCursor
 import time
 
-# =============================================================================
-# 🚀 INITIALISATION DE L'APPLICATION
-# =============================================================================
 
+# =================================
+# 1. INITIALISATION DE L'APPLICATION
+# =================================
+
+# création de l'application
 app = FastAPI(
     title="Microservices Todo App",
     description="API REST pour le projet final ESIEA - Gestion de tâches",
     version="1.0.0"
 )
 
-# =============================================================================
-# 🌐 CONFIGURATION CORS (OBLIGATOIRE POUR FRONTEND)
-# =============================================================================
+# =================================
+# 2. CONFIGURATION CORS (FRONTEND)
+# =================================
 
+# configuration des origines autorisées (CORS) pour le frontend car bloqué par défaut
 app.add_middleware(
     CORSMiddleware,
     # On autorise le localhost et le réseau docker
@@ -37,59 +40,59 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# =============================================================================
-# 📊 MODÈLES DE DONNÉES (PYDANTIC)
-# =============================================================================
 
-# Définition de ce qu'est une Tâche (Item)
+# =================================
+# 3. MODÈLES DE DONNÉES (PYDANTIC)
+# =================================
+
+# définition de ce qu'est une Tâche (Item) sur un modèle
 class ItemBase(BaseModel):
-    name: str               # Titre de la tâche
-    description: Optional[str] = None
+    name: str # nom tâche 
+    description: Optional[str] = None # description tâche (optionnelle)
 
 class ItemCreate(ItemBase):
     pass
 
-class Item(ItemBase):
-    id: int
-    # On ajoute created_at pour l'affichage si besoin, sinon optionnel
-    
+class Item(ItemBase): # si la tâche existe et retournée par la DB
+    id: int # on utilise son id 
     class Config:
         from_attributes = True
 
-# =============================================================================
-# 🗃️ FONCTION DE CONNEXION (DÉPLACÉE ICI POUR ÊTRE UTILISÉE PLUS BAS)
-# =============================================================================
+
+# =================================
+# 4. CONNEXION A LA DB
+# =================================
 
 def get_db_connection():
     """
     Connexion à la base de données PostgreSQL
     """
     try:
-        # On lit le mot de passe depuis le secret Docker (Sécurité)
-        # Si le fichier secret n'existe pas (dev local), on met un mot de passe par défaut
-        pwd_path = os.getenv("DB_PASSWORD_FILE", "/run/secrets/db_password")
+        pwd_path = os.getenv("DB_PASSWORD_FILE", "/run/secrets/db_password") # lecture du mdp pour ouvrir la base
         if os.path.exists(pwd_path):
             with open(pwd_path, "r") as f:
                 password = f.read().strip()
         else:
-            password = "password_local_insecure" # Juste pour éviter le crash en test hors docker
+            password = "password_local_insecure"
 
         conn = psycopg2.connect(
-            host=os.getenv("DB_HOST", "db"),        # Nom du service dans docker-compose
+            host=os.getenv("DB_HOST", "db"), # nom du service dans docker-compose (db compose)
             database=os.getenv("DB_NAME", "app_db"),
             user=os.getenv("DB_USER", "postgres"),
             password=password,
-            cursor_factory=RealDictCursor           # Pour avoir des résultats {clé: valeur}
+            cursor_factory=RealDictCursor
         )
         return conn
     except Exception as e:
         print(f"Erreur de connexion DB: {e}")
         return None
 
-# =============================================================================
-# 🏥 HEALTH CHECK (OBLIGATOIRE)
-# =============================================================================
 
+# =================================
+# 5. HEALTH CHECK
+# =================================
+
+# vérifie toutes les 30 secondes si la DB est accessible (demandé par énoncé)
 @app.get("/health", tags=["Health"])
 def health_check():
     """
@@ -101,9 +104,10 @@ def health_check():
         "version": "1.0.0"
     }
 
-# =============================================================================
-# 🔧 ENDPOINTS DE BASE
-# =============================================================================
+
+# =================================
+# 6. ENDPOINTS DE BASE
+# =================================
 
 @app.get("/", tags=["Root"])
 def read_root():
@@ -116,52 +120,60 @@ def read_root():
         "docs": "/docs"
     }
 
-# =============================================================================
-# 📝 ENDPOINTS CRUD (IMPLÉMENTATION RÉELLE)
-# =============================================================================
 
-# 1. POST : Créer une tâche
+# =================================
+# 7. CRUD DB
+# =================================
+
+# --- POST : Créer une tâche
 @app.post("/items/", response_model=Item, tags=["Items"])
 def create_item(item: ItemCreate):
     """
-    Créer un nouvel élément (POST) - Enregistre en base de données
+    Créer un nouvel élément (POST) en base de données
     """
+
+    # vérification connexion DB
     conn = get_db_connection()
     if conn is None:
         raise HTTPException(status_code=500, detail="Database connection failed")
     
     try:
         cur = conn.cursor()
-        # Requete SQL d'insertion
+        
+        # requête de création de tâche
         query = "INSERT INTO items (name, description) VALUES (%s, %s) RETURNING id, name, description;"
         cur.execute(query, (item.name, item.description))
         
-        new_item = cur.fetchone() # Récupère l'objet créé
-        conn.commit()             # Valide la transaction
+        new_item = cur.fetchone() # récupère l'objet créé
+        conn.commit() # valide la transaction
         cur.close()
         conn.close()
         
         return new_item
     except Exception as e:
-        conn.rollback() # Annule en cas d'erreur
+        conn.rollback() # annule en cas d'erreur
         conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
-# 2. GET : Lire les tâches
+
+# --- GET : Lire les tâches
 @app.get("/items/", response_model=List[Item], tags=["Items"])
 def read_items(skip: int = 0, limit: int = 100):
     """
-    Récupérer la liste des éléments (GET) - Lit depuis la base de données
+    Récupérer la liste des éléments (GET) depuis la base de données
     """
+
+    # vérification connexion DB
     conn = get_db_connection()
     if conn is None:
-        # En cas d'erreur de connexion, on renvoie une liste vide pour ne pas casser le front
+        # si pas de connexion -> liste vide pour pas planter le frontend
         print("Database not accessible")
         return []
     
     try:
         cur = conn.cursor()
-        # Requete SQL de sélection
+
+        # requête de lecture des tâches
         cur.execute("SELECT id, name, description FROM items ORDER BY id DESC LIMIT %s OFFSET %s;", (limit, skip))
         items = cur.fetchall()
         
@@ -172,19 +184,23 @@ def read_items(skip: int = 0, limit: int = 100):
         conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
-# 3. DELETE : Supprimer une tâche
+
+# --- DELETE : Supprimer une tâche
 @app.delete("/items/{item_id}", tags=["Items"])
 def delete_item(item_id: int):
     """
     Supprimer un élément (DELETE) - Supprime de la base de données
     """
+
+    # vérification connexion DB
     conn = get_db_connection()
     if conn is None:
         raise HTTPException(status_code=500, detail="Database connection failed")
 
     try:
         cur = conn.cursor()
-        # Requete SQL de suppression
+
+        # requête pour supprimer une tâche
         cur.execute("DELETE FROM items WHERE id = %s RETURNING id;", (item_id,))
         deleted_item = cur.fetchone()
         
@@ -192,21 +208,24 @@ def delete_item(item_id: int):
         cur.close()
         conn.close()
         
-        if deleted_item is None:
+        if deleted_item is None: # si tâche non trouvée -> erreur 404
             raise HTTPException(status_code=404, detail=f"Item {item_id} not found")
             
-        return {"message": f"Item {item_id} supprimé avec succès"}
+        return {"message": f"Item {item_id} supprimé avec succès"} # validation de suppression 
     except HTTPException as he:
         raise he
     except Exception as e:
         conn.rollback()
         conn.close()
         raise HTTPException(status_code=500, detail=str(e))
+    
 
-# =============================================================================
-# 🚀 POINT D'ENTRÉE
-# =============================================================================
+# =================================
+# 8. LANCEMENT SERVEUR
+# =================================
 
+# lancement de l'application avec Uvicorn (serveur web)
+# note : uniquement si on exécute ce fichier directement
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
