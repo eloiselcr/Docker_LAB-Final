@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # 1. Ton Backend
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: db
+      DB_NAME: app_db
+      DB_USER: postgres
+      DB_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # 2. La Base de données (juste pour le test)
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: app_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    # IMPORTANT : On crée la table au démarrage
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+secrets:
+  db_password:
+    file: ./secrets/db_password
