@@ -1,17 +1,4 @@
-C'est le meilleur choix pour ton projet. Cela montre au prof que tu as adapté le design à l'identité de l'école (couleur Bleu Cyan/Azure typique de l'ESIEA), ce qui fait très "Sérieux" et "Corporate".
-
-Voici le code CSS complet remanié. Il remplace le violet "Instagram" par un Bleu ESIEA professionnel, avec un fond gris clair technique.
-
-Copie tout ce bloc et remplace TOUT le contenu de ton fichier frontend/src/style.css :
-
-CSS
-
-/* =========================================
-   STYLE THÈME ESIEA (Bleu & Clean)
-   ========================================= */
-
-/* Reset et Base */
-* {
+{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
