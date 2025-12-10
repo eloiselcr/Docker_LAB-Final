@@ -8,50 +8,49 @@ services:
   # SERVICE BACKEND (API FastAPI)
   # ==========================================
   backend:
-    build: ./backend # construction de l'image depuis le dossier /backend
+    build: ./backend
     ports:
-      - "8000:8000" # configuration du port 
-    
+      - "8000:8000"
     environment:
       DB_HOST: db
-      DB_NAME: app_db # nom de la db
-      DB_USER: postgres # user par défaut
-      DB_PASSWORD_FILE: /run/secrets/db_password # chemin du mdp
-    
+      DB_NAME: app_db
+      DB_USER: postgres
+      DB_PASSWORD_FILE: /run/secrets/db_password
     secrets:
-      - db_password 
+      - db_password
     depends_on:
       db:
-        condition: service_healthy # attend que la db soit bien montée avant de lancer l'API
-
+        condition: service_healthy
 
   # ==========================================
   # SERVICE BASE DE DONNÉES (PostgreSQL)
   # ==========================================
   db:
-    build: ./database # construction de l'image depuis le dossier /database
+    build: ./database
     environment:
-      POSTGRES_DB: app_db # nom de la db
-      POSTGRES_USER: postgres # user par défaut
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_password # chemin du mdp
+      POSTGRES_DB: app_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
     secrets:
-      - db_password 
+      - db_password
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"] # vérification si serveur accepte connexions
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
 
+  # ==========================================
+  # SERVICE FRONTEND (AJOUTÉ ICI)
+  # ==========================================
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
 
-  # ==========================================
-  # GESTION DU FICHIER SECRET DB
-  # ==========================================
+# ==========================================
+# GESTION DES SECRETS (GLOBAL)
+# ==========================================
 secrets:
   db_password:
     file: ./secrets/db_password
-
-
-  # ==========================================
-  # SERVICE FRONTEND
-  # ==========================================
-
-  # alexis...
