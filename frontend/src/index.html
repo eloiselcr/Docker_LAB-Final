@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma liste "To Do"</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="main-container">
+        <header>
+            <h1><i class="fas fa-check-double"></i> Task Manager</h1>
+            <p>Orchestré avec Docker Compose</p>
+        </header>
+
+        <div class="input-group">
+            <input type="text" id="taskInput" placeholder="Que devez-vous faire aujourd'hui ?">
+            <button onclick="addTask()" id="addBtn">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+
+        <ul id="taskList">
+            </ul>
+
+        <div id="status" class="status-bar">
+            <i class="fas fa-wifi"></i> En attente de connexion API...
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
