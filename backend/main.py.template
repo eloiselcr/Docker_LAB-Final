@@ -1,0 +1,151 @@
+# =============================================================================
+# 🐍 Backend API Template - FastAPI
+# Fichier principal de l'API REST
+# =============================================================================
+
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import os
+from typing import List, Optional
+
+# TODO: Importer vos modules de base de données
+# from database import get_db_connection
+# import psycopg2
+
+# =============================================================================
+# 🚀 INITIALISATION DE L'APPLICATION
+# =============================================================================
+
+app = FastAPI(
+    title="Votre Projet Microservices",  # TODO: Personnaliser
+    description="API REST pour le projet final ESIEA",
+    version="1.0.0"
+)
+
+# =============================================================================
+# 🌐 CONFIGURATION CORS (OBLIGATOIRE POUR FRONTEND)
+# =============================================================================
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://192.168.56.11:3000"],  # TODO: Adapter selon votre environnement
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# =============================================================================
+# 📊 MODÈLES DE DONNÉES (PYDANTIC)
+# =============================================================================
+
+# TODO: Définir vos modèles selon votre projet
+class ItemBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+class ItemCreate(ItemBase):
+    pass
+
+class Item(ItemBase):
+    id: int
+    
+    class Config:
+        from_attributes = True
+
+# =============================================================================
+# 🏥 HEALTH CHECK (OBLIGATOIRE)
+# =============================================================================
+
+@app.get("/health", tags=["Health"])
+def health_check():
+    """
+    Health check endpoint - OBLIGATOIRE pour Docker health check
+    """
+    return {
+        "status": "healthy",
+        "service": "backend-api",
+        "version": "1.0.0"
+    }
+
+# =============================================================================
+# 🔧 ENDPOINTS DE BASE (EXEMPLES À ADAPTER)
+# =============================================================================
+
+@app.get("/", tags=["Root"])
+def read_root():
+    """
+    Endpoint racine - Information sur l'API
+    """
+    return {
+        "message": "Bienvenue sur votre API microservices",
+        "project": "ESIEA Final Project",
+        "docs": "/docs"
+    }
+
+# =============================================================================
+# 📝 ENDPOINTS CRUD (TODO: IMPLÉMENTER VOS 3 ENDPOINTS MINIMUM)
+# =============================================================================
+
+# TODO: Remplacer ces exemples par votre logique métier
+
+@app.post("/items/", response_model=Item, tags=["Items"])
+def create_item(item: ItemCreate):
+    """
+    Créer un nouvel élément (POST) - OBLIGATOIRE
+    TODO: Implémenter la logique de création en base
+    """
+    # Exemple simple - à remplacer par votre logique DB
+    fake_item = Item(id=1, name=item.name, description=item.description)
+    return fake_item
+
+@app.get("/items/", response_model=List[Item], tags=["Items"])
+def read_items(skip: int = 0, limit: int = 10):
+    """
+    Récupérer la liste des éléments (GET) - OBLIGATOIRE  
+    TODO: Implémenter la récupération depuis la base
+    """
+    # Exemple simple - à remplacer par votre logique DB
+    fake_items = [
+        Item(id=1, name="Item 1", description="Description 1"),
+        Item(id=2, name="Item 2", description="Description 2")
+    ]
+    return fake_items
+
+@app.delete("/items/{item_id}", tags=["Items"])
+def delete_item(item_id: int):
+    """
+    Supprimer un élément (DELETE) - OBLIGATOIRE
+    TODO: Implémenter la suppression en base
+    """
+    # Exemple simple - à remplacer par votre logique DB
+    return {"message": f"Item {item_id} supprimé avec succès"}
+
+# =============================================================================
+# 🗃️ CONNEXION BASE DE DONNÉES (TODO: IMPLÉMENTER)
+# =============================================================================
+
+# TODO: Implémenter vos fonctions de connexion DB
+def get_db_connection():
+    """
+    Connexion à la base de données
+    """
+    # Exemple pour PostgreSQL :
+    # import psycopg2
+    # 
+    # conn = psycopg2.connect(
+    #     host=os.getenv("DB_HOST", "db"),
+    #     database=os.getenv("DB_NAME", "your_db"),
+    #     user=os.getenv("DB_USER", "your_user"),
+    #     password=open("/run/secrets/db_password").read().strip()
+    # )
+    # return conn
+    pass
+
+# =============================================================================
+# 🚀 POINT D'ENTRÉE
+# =============================================================================
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

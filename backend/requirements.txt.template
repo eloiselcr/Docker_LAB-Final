@@ -1,0 +1,68 @@
+# =============================================================================
+# 📦 Dépendances Python Backend - Template
+# =============================================================================
+
+# =============================================================================
+# 🌐 FRAMEWORK WEB (CHOISIR UN SEUL)
+# =============================================================================
+
+# FastAPI (recommandé pour APIs REST modernes)
+fastapi==0.104.1
+uvicorn==0.24.0
+
+# OU Flask (alternative plus simple)
+# flask==3.0.0
+# flask-cors==4.0.0
+
+# =============================================================================
+# 🗃️ CONNECTEURS BASE DE DONNÉES (CHOISIR SELON VOTRE DB)
+# =============================================================================
+
+# PostgreSQL
+psycopg2-binary==2.9.9
+
+# OU MySQL
+# mysql-connector-python==8.2.0
+
+# OU MongoDB
+# pymongo==4.6.0
+
+# =============================================================================
+# 🔧 OUTILS ET UTILITAIRES
+# =============================================================================
+
+# Requêtes HTTP pour health checks
+requests==2.31.0
+
+# Variables d'environnement
+python-dotenv==1.0.0
+
+# Validation de données (si FastAPI)
+pydantic==2.5.0
+
+# CORS (Cross-Origin Resource Sharing)
+# Déjà inclus avec FastAPI, sinon :
+# flask-cors==4.0.0
+
+# =============================================================================
+# 🏥 HEALTH CHECKS ET MONITORING
+# =============================================================================
+
+# Pour les health checks HTTP
+httpx==0.25.2
+
+# =============================================================================
+# 📝 INSTRUCTIONS
+# =============================================================================
+# 
+# 1. Adaptez ce fichier selon votre projet :
+#    - Gardez seulement le framework choisi (FastAPI OU Flask)
+#    - Gardez seulement le connecteur DB choisi
+#    - Ajoutez vos dépendances spécifiques
+# 
+# 2. Installez localement pour développement :
+#    pip install -r requirements.txt
+# 
+# 3. Le Dockerfile utilisera ce fichier automatiquement
+# 
+# =============================================================================

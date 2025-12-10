@@ -1,0 +1,158 @@
+# ========================================
+# 🐳 Docker Compose Template
+# Projet Microservices - ESIEA
+# 
+# Template pour le projet final d'application microservices
+# À adapter selon vos besoins spécifiques
+# ========================================
+
+# Nom du projet (à personnaliser)
+name: your-project-name
+
+services:
+
+  # ========================================
+  # 🗃️ SERVICE BASE DE DONNÉES
+  # ========================================
+  db:
+    # TODO: Choisir votre base de données (PostgreSQL, MySQL, MongoDB)
+    image: postgres:16-alpine
+    
+    # TODO: Configurer vos variables d'environnement
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+      # Utilisation des secrets Docker (bonne pratique)
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    
+    # Volume pour persistance des données
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    
+    # Secrets Docker pour sécurité
+    secrets:
+      - db_password
+    
+    # Health check obligatoire
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Réseau personnalisé obligatoire
+    networks:
+      - app_network
+
+  # ========================================
+  # 🖥️ SERVICE BACKEND (API)
+  # ========================================
+  backend:
+    # TODO: Créer votre Dockerfile backend
+    build: ./backend
+    
+    # TODO: Configurer vos variables d'environnement
+    environment:
+      DB_HOST: db
+      DB_USER: ${DB_USER}
+      DB_NAME: ${DB_NAME}
+      DB_PASSWORD_FILE: /run/secrets/db_password
+    
+    # Port du backend (à adapter)
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    
+    # Attendre que la DB soit healthy
+    depends_on:
+      db:
+        condition: service_healthy
+    
+    # Secrets Docker
+    secrets:
+      - db_password
+    
+    # Health check obligatoire - endpoint /health requis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Réseau personnalisé
+    networks:
+      - app_network
+
+  # ========================================
+  # 🎨 SERVICE FRONTEND
+  # ========================================
+  frontend:
+    # TODO: Créer votre Dockerfile frontend
+    build: ./frontend
+    
+    # Port du frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    
+    # TODO: Configurer l'URL de votre API
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+    
+    # Attendre que le backend soit healthy
+    depends_on:
+      backend:
+        condition: service_healthy
+    
+    # Health check obligatoire - endpoint /health requis
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s 
+    
+    # Réseau personnalisé
+    networks:
+      - app_network
+
+# ========================================
+# 💾 VOLUMES PERSISTANTS
+# ========================================
+volumes:
+  db_data:
+    driver: local
+
+# ========================================
+# 🌐 RÉSEAU PERSONNALISÉ (OBLIGATOIRE)
+# ========================================
+networks:
+  app_network:
+    driver: bridge
+
+# ========================================
+# 🔐 SECRETS DOCKER (OBLIGATOIRE)
+# ========================================
+secrets:
+  db_password:
+    file: ./secrets/db_password
+
+# ========================================
+# 🚀 COMMANDES UTILES
+# ========================================
+# 
+# Construire et démarrer :
+#   docker compose up --build -d
+# 
+# Vérifier les services :
+#   docker compose ps
+# 
+# Voir les logs :
+#   docker compose logs -f [nom_service]
+# 
+# Arrêter les services :
+#   docker compose down
+# 
+# Nettoyer complètement :
+#   docker compose down -v
+#

@@ -1,0 +1,118 @@
+-- =============================================================================
+-- 🗃️ Script d'initialisation PostgreSQL - Template
+-- Exécuté automatiquement au premier démarrage du conteneur
+-- =============================================================================
+
+-- =============================================================================
+-- 📋 CRÉATION DES TABLES (TODO: Adapter selon votre projet)
+-- =============================================================================
+
+-- Table d'exemple - à remplacer par votre schéma
+CREATE TABLE IF NOT EXISTS items (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- TODO: Ajouter vos autres tables
+-- CREATE TABLE IF NOT EXISTS users (
+--     id SERIAL PRIMARY KEY,
+--     username VARCHAR(50) UNIQUE NOT NULL,
+--     email VARCHAR(100) UNIQUE NOT NULL,
+--     password_hash VARCHAR(255) NOT NULL,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
+
+-- =============================================================================
+-- 📊 INDEX ET CONTRAINTES
+-- =============================================================================
+
+-- Index pour optimiser les requêtes fréquentes
+CREATE INDEX IF NOT EXISTS idx_items_name ON items(name);
+CREATE INDEX IF NOT EXISTS idx_items_created_at ON items(created_at);
+
+-- TODO: Ajouter vos contraintes et index
+-- CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email);
+-- ALTER TABLE items ADD CONSTRAINT fk_items_user FOREIGN KEY (user_id) REFERENCES users(id);
+
+-- =============================================================================
+-- 🌱 DONNÉES D'EXEMPLE (OPTIONNEL)
+-- =============================================================================
+
+-- Insérer quelques données de test (pour développement)
+INSERT INTO items (name, description) VALUES 
+    ('Item de test 1', 'Premier élément pour tester l''API'),
+    ('Item de test 2', 'Deuxième élément avec description'),
+    ('Item de test 3', 'Troisième élément')
+ON CONFLICT DO NOTHING;
+
+-- TODO: Ajouter vos données d'initialisation
+-- INSERT INTO users (username, email, password_hash) VALUES 
+--     ('admin', 'admin@example.com', '$hashed_password$')
+-- ON CONFLICT DO NOTHING;
+
+-- =============================================================================
+-- 🔧 FONCTIONS ET PROCÉDURES (OPTIONNEL)
+-- =============================================================================
+
+-- Fonction pour mettre à jour automatiquement updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Trigger pour la table items
+DROP TRIGGER IF EXISTS update_items_updated_at ON items;
+CREATE TRIGGER update_items_updated_at
+    BEFORE UPDATE ON items
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- =============================================================================
+-- 👤 PERMISSIONS ET SÉCURITÉ (OPTIONNEL)
+-- =============================================================================
+
+-- TODO: Configurer les permissions si nécessaire
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON items TO your_project_user;
+-- GRANT USAGE, SELECT ON SEQUENCE items_id_seq TO your_project_user;
+
+-- =============================================================================
+-- 📝 COMMENTAIRES ET DOCUMENTATION
+-- =============================================================================
+
+-- Commenter les tables pour la documentation
+COMMENT ON TABLE items IS 'Table des éléments principaux de l''application';
+COMMENT ON COLUMN items.id IS 'Identifiant unique auto-incrémenté';
+COMMENT ON COLUMN items.name IS 'Nom de l''élément (requis)';
+COMMENT ON COLUMN items.description IS 'Description détaillée (optionnel)';
+
+-- =============================================================================
+-- 🔍 VUES UTILES (OPTIONNEL)
+-- =============================================================================
+
+-- Vue pour les statistiques
+CREATE OR REPLACE VIEW items_stats AS
+SELECT 
+    COUNT(*) as total_items,
+    COUNT(CASE WHEN description IS NOT NULL THEN 1 END) as items_with_description,
+    MIN(created_at) as first_item_date,
+    MAX(created_at) as last_item_date
+FROM items;
+
+-- TODO: Ajouter vos vues personnalisées
+
+-- =============================================================================
+-- ✅ VALIDATION DE L'INITIALISATION
+-- =============================================================================
+
+-- Vérifier que l'initialisation s'est bien passée
+DO $$
+BEGIN
+    RAISE NOTICE 'Base de données initialisée avec succès !';
+    RAISE NOTICE 'Tables créées: %', (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public');
+END $$;
