@@ -1,3 +1,15 @@
+C'est le meilleur choix pour ton projet. Cela montre au prof que tu as adapté le design à l'identité de l'école (couleur Bleu Cyan/Azure typique de l'ESIEA), ce qui fait très "Sérieux" et "Corporate".
+
+Voici le code CSS complet remanié. Il remplace le violet "Instagram" par un Bleu ESIEA professionnel, avec un fond gris clair technique.
+
+Copie tout ce bloc et remplace TOUT le contenu de ton fichier frontend/src/style.css :
+
+CSS
+
+/* =========================================
+   STYLE THÈME ESIEA (Bleu & Clean)
+   ========================================= */
+
 /* Reset et Base */
 * {
     margin: 0;
@@ -7,7 +19,11 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* Fond gris clair professionnel (au lieu du dégradé violet) */
+    background-color: #f0f2f5;
+    /* Petit motif technique subtil en arrière-plan */
+    background-image: radial-gradient(#dce0e3 1px, transparent 1px);
+    background-size: 20px 20px;
     height: 100vh;
     display: flex;
     justify-content: center;
@@ -17,12 +33,15 @@ body {
 
 /* La carte principale */
 .main-container {
-    background: rgba(255, 255, 255, 0.95);
+    background: white;
     width: 100%;
     max-width: 450px;
     padding: 2rem;
-    border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    border-radius: 12px; /* Coins un peu plus carrés pour faire "Sérieux" */
+    /* Ombre plus douce et précise */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    /* La touche ESIEA : Une bordure bleue en haut */
+    border-top: 6px solid #009fe3; 
     animation: fadeIn 0.8s ease-in-out;
 }
 
@@ -33,14 +52,19 @@ header {
 }
 
 header h1 {
-    font-weight: 600;
-    color: #4a4a4a;
+    font-weight: 700;
+    /* Le Bleu ESIEA */
+    color: #009fe3;
+    text-transform: uppercase;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
 }
 
 header p {
-    color: #888;
+    color: #666;
     font-size: 0.9rem;
     margin-top: 5px;
+    font-style: italic;
 }
 
 /* Zone de saisie */
@@ -53,30 +77,36 @@ header p {
 input {
     flex-grow: 1;
     padding: 12px 15px;
-    border: 2px solid #eee;
-    border-radius: 10px;
+    border: 2px solid #e1e4e8;
+    border-radius: 8px;
     font-size: 1rem;
     outline: none;
     transition: 0.3s;
     font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
 }
 
 input:focus {
-    border-color: #764ba2;
+    /* Bordure bleue au focus */
+    border-color: #009fe3;
+    background-color: white;
 }
 
 button#addBtn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* Fond Bleu ESIEA Uni */
+    background-color: #009fe3;
     color: white;
     border: none;
     padding: 0 20px;
-    border-radius: 10px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: all 0.2s;
+    font-weight: 600;
 }
 
 button#addBtn:hover {
-    transform: scale(1.05);
+    background-color: #007bb0; /* Bleu un peu plus foncé au survol */
+    transform: translateY(-2px);
 }
 
 /* Liste des tâches */
@@ -84,6 +114,16 @@ ul {
     list-style: none;
     max-height: 300px;
     overflow-y: auto;
+    padding-right: 5px; /* Pour l'esthétique de la scrollbar */
+}
+
+/* Scrollbar personnalisée (plus jolie) */
+ul::-webkit-scrollbar {
+    width: 6px;
+}
+ul::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 3px;
 }
 
 li {
@@ -93,29 +133,34 @@ li {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: 0.3s;
+    transition: 0.2s;
     animation: slideIn 0.3s ease;
+    border-left: 3px solid transparent; /* Prêt pour l'effet de survol */
 }
 
 li:hover {
-    background-color: #f9f9fa;
-    transform: translateX(5px);
+    background-color: #f8fcfd;
+    /* Petite barre bleue à gauche au survol */
+    border-left: 3px solid #009fe3;
+    padding-left: 18px; /* Décalage léger */
 }
 
-/* Bouton Supprimer (Rouge) */
+/* Bouton Supprimer */
 .delete-btn {
     background: transparent;
-    color: #ff6b6b;
+    color: #ff6b6b; /* On garde le rouge pour l'action destructive */
     border: none;
     cursor: pointer;
     font-size: 1.1rem;
     padding: 5px;
     transition: 0.2s;
+    opacity: 0.7;
 }
 
 .delete-btn:hover {
-    color: #c0392b;
-    transform: scale(1.2);
+    color: #d63031;
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 /* Barre de statut */
@@ -123,7 +168,8 @@ li:hover {
     margin-top: 20px;
     text-align: center;
     font-size: 0.8rem;
-    color: #aaa;
+    color: #888;
+    font-weight: 500;
 }
 
 /* Animations */
