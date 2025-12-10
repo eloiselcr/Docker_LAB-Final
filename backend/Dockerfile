@@ -3,7 +3,7 @@
 # =============================================================================
 
 
-# Utilisation de 'alpine' pour éviter les erreurs avec PostgreSQL
+# Utilisation de 'slim' pour une image plus légère et compatibilié Postgres
 FROM python:3.11-slim
 
 # Métadonnées
